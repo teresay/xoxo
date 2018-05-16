@@ -2,21 +2,55 @@ import { Map } from "immutable";
 
 let board = Map();
 
-const move = function(turn, [row, col]) {
+const move = function (turn, [row, col]) {
   return { type: "MOVE", position: [row, col], turn: turn };
 };
 
-export default function gameReducer(state = { winner: null, turn: "X", board }, action) {
-  if (action.type === "MOVE") {
-    state.board = state.board.setIn(action.position, state.turn);
-    return state.turn === "X"
-      ? { turn: "O", board: state.board }
-      : { turn: "X", board: state.board };
-  } else {
-    return state;
+// export default function gameReducer(state = { winner: null, turn: "X", board }, action) {
+//   if (action.type === "MOVE") {
+//     state.board = state.board.setIn(action.position, state.turn);
+//     return state.turn === "X"
+//       ? { turn: "O", board: state.board }
+//       : { turn: "X", board: state.board };
+//   } else {
+//     return state;
+//   }
+// }
+
+export default function gameReducer(state = {}, action) {
+  return {
+    board: boardreducer(state.board, action),
+    turn: turnreducer(state.turn, action),
+    winner: winner(boardreducer(state.board, action))
   }
 }
 
+function boardreducer(board = Map(), action) {
+  if (action.type === "MOVE") {
+    return board.setIn(action.position, action.turn)
+  }
+  return board
+}
+
+function turnreducer(turn = 'X', action) {
+  if (action.type === 'MOVE') {
+    return turn === 'X' ? 'O' : 'X'
+  }
+  return turn
+}
+
+// Streak helper function
+const streak = (board, firstCoord, secondCoord, thirdCoord) => {
+  const firstGet = board.getIn(firstCoord);
+  const secondGet = board.getIn(secondCoord);
+  const thirdGet = board.getIn(thirdCoord);
+
+  if (firstGet === secondGet && firstGet === thirdGet) {
+    return firstGet;
+  } else {
+    return undefined;
+  }
+};
 // Winner function
 const winner = board => {
   const row0 = streak(board, [0, 0], [0, 1], [0, 2]);
@@ -31,8 +65,9 @@ const winner = board => {
   const checkerArr = [row0, row1, row2, col0, col1, col2, diag1, diag2];
 
   const winningLetter = checkerArr.filter(letter => letter);
+  console.log('winningLetter', winningLetter)
 
-  if (winningLetter) return winningLetter;
+  if (winningLetter) return winningLetter[0];
 
   for (let r = 0; r <= 2; r++) {
     for (let c = 0; c <= 2; c++) {
@@ -42,17 +77,5 @@ const winner = board => {
   return "draw";
 };
 
-// Streak helper function
-const streak = (board, firstCoord, secondCoord, thirdCoord) => {
-  const firstGet = board.getIn(firstCoord);
-  const secondGet = board.getIn(secondCoord);
-  const thirdGet = board.getIn(thirdCoord);
 
-  if (firstGet === secondGet && firstGet === thirdGet) {
-    return firstGet;
-  } else {
-    return undefined;
-  }
-};
-
-export { move, winner };
+export { move };

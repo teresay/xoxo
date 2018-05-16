@@ -1,6 +1,6 @@
 import inquirer from "inquirer";
 
-import gameReducer, { move, winner } from "./game";
+import gameReducer, { move } from "./game";
 import { createStore } from "redux";
 
 const printBoard = () => {
@@ -34,9 +34,19 @@ const game = createStore(gameReducer);
 game.subscribe(() => console.log(game.getState()));
 
 game.subscribe(printBoard);
-game.subscribe(getInput("X"));
-game.subscribe(getInput("O"));
+game.subscribe(getInput('X'));
+game.subscribe(getInput('O'));
+game.subscribe(() => {
+  if (game.getState().winner === 'X' || game.getState().winner === 'O') {
+    console.log(`${game.getState().winner} WINS!`)
+    process.exit(0)
+  }
+  if (game.getState().winner === 'draw') {
+    console.log('You both suck at this')
+    process.exit(0)
+  }
+})
 
 // We dispatch a dummy START action to call all our
 // subscribers the first time.
-game.dispatch({ type: "START" });
+game.dispatch({ type: 'START' });
